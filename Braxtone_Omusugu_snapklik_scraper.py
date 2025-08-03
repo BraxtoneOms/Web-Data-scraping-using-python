@@ -454,7 +454,7 @@ def main():
         print("Using data from debug.html")
         all_products = data.get("data", {}).get("hits", [])
     else:
-        print("❌ Failed to fetch product data.")
+        print("X! Failed to fetch product data.")
         return
     
     print(f"Found {len(all_products)} products")
@@ -474,7 +474,7 @@ def main():
         
         # Save to CSV
         df.to_csv("Braxtone_Omusugu_snapklik_products.csv", index=False)
-        print("✅ Product data saved to Braxtone_Omusugu_snapklik_products.csv")
+        print("Hurray!!! Product data saved to Braxtone_Omusugu_snapklik_products.csv")
         
         # Group products by ingredients
         ingredient_groups = group_products_by_ingredients(df)
@@ -521,7 +521,7 @@ def main():
         # Create DataFrame and save to CSV
         output_df = pd.DataFrame(output_data)
         output_df.to_csv('Braxtone Omusugu - grouped_skincare_products.csv', index=False)
-        print("✅ Results saved to 'Braxtone Omusugu - grouped_skincare_products.csv'")
+        print("Hurray!!!! Results saved to 'Braxtone Omusugu - grouped_skincare_products.csv'")
         
         # Display summary
         print(f"\nSummary: Grouped {len(products_list)} products by key ingredients")
@@ -533,7 +533,7 @@ def main():
         for ingredient, products in sorted_groups[:5]:
             print(f"  {ingredient.title()}: {len(products)} products")
     else:
-        print("❌ No product data scraped.")
+        print("X! No product data scraped.")
 
 if __name__ == "__main__":
     main()
