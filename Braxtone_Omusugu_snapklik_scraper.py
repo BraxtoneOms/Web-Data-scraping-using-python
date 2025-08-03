@@ -16,6 +16,7 @@ import re
 import pandas as pd
 import requests
 import json
+import os
 from collections import defaultdict
 
 def fetch_products_from_api(page=0, search_term="skin care"):
@@ -39,6 +40,10 @@ def fetch_products_from_api(page=0, search_term="skin care"):
         print(f"Error fetching products from API: {e}")
         # Try to parse HTML as fallback
         try:
+            if not os.path.exists('debug.html'):
+                print("Warning: debug.html file not found for fallback parsing")
+                return None
+            
             with open('debug.html', 'r', encoding='utf-8') as f:
                 html_content = f.read()
             
@@ -56,7 +61,7 @@ def fetch_products_from_api(page=0, search_term="skin care"):
                     if 'skid' in data and 'categories' in data:
                         product_objects.append(data)
                 except Exception:
-                    # Try to extract partial data
+                    # Try to extract partial data using regex patterns
                     try:
                         # Look for all available fields
                         skid_match = re.search(r'"skid":"([^"]+)"', match)
@@ -88,18 +93,8 @@ def fetch_products_from_api(page=0, search_term="skin care"):
                                 "OptionMap": json.loads(option_map_match.group(1)) if option_map_match else {}
                             }
                             product_objects.append(product_data)
-                    except Exception:
-                        continue
-                except:
-                    # Try to extract partial data
-                    try:
-                        # Look for skid
-                        skid_match = re.search(r'"skid":"([^"]+)"', match)
-                        text_match = re.search(r'"text":"([^"]+)"', match)
-                        categories_match = re.search(r'"categories":(\[[^\]]*\])', match)
-                        brand_match = re.search(r'"brand":"([^"]*)"', match)
-                        
-                        if skid_match and categories_match:
+                        elif skid_match and categories_match:
+                            # Fallback with minimal required fields
                             product_data = {
                                 "skid": skid_match.group(1),
                                 "text": text_match.group(1) if text_match else "",
@@ -107,7 +102,7 @@ def fetch_products_from_api(page=0, search_term="skin care"):
                                 "brand": brand_match.group(1) if brand_match else ""
                             }
                             product_objects.append(product_data)
-                    except:
+                    except Exception:
                         continue
                 
             # If we didn't find any products with the regex, try a simpler approach
@@ -478,8 +473,8 @@ def main():
         df = pd.DataFrame(all_data)
         
         # Save to CSV
-        df.to_csv("snapklik_products.csv", index=False)
-        print("✅ Product data saved to snapklik_products.csv")
+        df.to_csv("Braxtone_Omusugu_snapklik_products.csv", index=False)
+        print("✅ Product data saved to Braxtone_Omusugu_snapklik_products.csv")
         
         # Group products by ingredients
         ingredient_groups = group_products_by_ingredients(df)
@@ -519,14 +514,14 @@ def main():
                     'Product Rank': i,
                     'Product Name': product['Product Name'],
                     'Brand': product['Brand Name'],
-                    'Price (USD)': f"${product['Price']/100:.2f}" if isinstance(product['Price'], (int, float)) else f"${product['Price']}",
+                    'Price (USD)': f"${product['Price']/100:.2f}" if isinstance(product['Price'], (int, float)) and product['Price'] != "" else str(product['Price']),
                     'Product Score': product['score']
                 })
         
         # Create DataFrame and save to CSV
         output_df = pd.DataFrame(output_data)
-        output_df.to_csv('grouped_skincare_products.csv', index=False)
-        print("✅ Results saved to 'grouped_skincare_products.csv'")
+        output_df.to_csv('Braxtone Omusugu - grouped_skincare_products.csv', index=False)
+        print("✅ Results saved to 'Braxtone Omusugu - grouped_skincare_products.csv'")
         
         # Display summary
         print(f"\nSummary: Grouped {len(products_list)} products by key ingredients")
